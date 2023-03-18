@@ -13,5 +13,3 @@ file_location = script_location / 'conf/config.json'
 def get_config() -> Dict:
     with open(file_location) as f:
         return json.load(f)
-
-
