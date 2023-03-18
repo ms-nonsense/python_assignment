@@ -43,12 +43,12 @@ def __get_raw_financial_data(url, payload) -> Dict:
         response = requests.get(url=url, params=payload, timeout=(3.0, 7.5))
         data = response.json()
         return data
-    except Timeout:
-        LOGGER.warning(f'Timeout occurs. Unable to fetch data from {url}')
-        return {}
-    except JSONDecodeError:
-        LOGGER.warning('Failed to parse response as JSON.')
-        return {}
+    except Timeout as t:
+        LOGGER.error(f'Timeout occurs. Unable to fetch data from {url}')
+        raise t
+    except JSONDecodeError as err:
+        LOGGER.error('Failed to parse response as JSON.')
+        raise err
 
 
 def __process_raw_data(stock_name: str, raw_data: dict) -> list:
