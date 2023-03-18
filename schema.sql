@@ -1,6 +1,5 @@
 CREATE DATABASE IF NOT EXISTS python_exercise;
-USE python_exercise;
-CREATE TABLE IF NOT EXISTS financial_data (
+CREATE TABLE IF NOT EXISTS python_exercise.financial_data (
     symbol          VARCHAR(20)     NOT NULL,
     date            DATE            NOT NULL,
     open_price      DECIMAL(8, 4)   SIGNED  NOT NULL,
