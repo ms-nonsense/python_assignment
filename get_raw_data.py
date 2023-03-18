@@ -11,9 +11,7 @@ from logging import config
 
 from pathlib import Path
 from typing import Dict
-
 import requests
-from financial.dao.financial_data_dao import FinancialDataDao
 from requests.exceptions import Timeout, JSONDecodeError
 from financial.utilities import get_config
 

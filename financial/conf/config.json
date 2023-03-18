@@ -1,0 +1,4 @@
+{
+  "stock_name": ["IBM", "AAPL"],
+  "stocks_endpoint": "https://www.alphavantage.co/query"
+}
