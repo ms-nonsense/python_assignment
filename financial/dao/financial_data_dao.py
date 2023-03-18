@@ -5,7 +5,7 @@ import pymysql.cursors
 from financial.model.query_parameters import QueryParameters
 
 
-class FinancialDataDao(object):
+class FinancialDataDao():
     """A class to handle operations for financial_data"""
 
     def __init__(self, config: Dict):
@@ -82,7 +82,40 @@ class FinancialDataDao(object):
 
         return self.query(sql, params=params).fetchall()
 
-    # can be used for statistics query
+    # FIXME: If data size is large, definitely return generator
+    def fetch_average(self, query_params: QueryParameters) -> dict:
+        """ Calculates and returns average of open_price, close_price and
+        volume for a specific time range
+
+        :param query_params: conditional clause to filter records
+        :return: dict of data
+        """
+        sql = """
+            SELECT
+                %(start_date)s AS start_date
+                ,%(end_date)s AS end_date
+                ,symbol
+                ,AVG(open_price) AS average_daily_open_price
+                ,AVG(close_price) AS average_daily_close_price
+                ,AVG(volume) AS average_daily_volume
+            FROM
+                financial_data
+        """
+        # Missing %s and %Y causes ValueError unsupported format character so
+        # we'll pass date_format as parameter
+        params = {'date_format': '%Y-%m-%d'}
+
+        # query parameters are all required
+        conditional_clause, cond_params = self.__create_conditional_clause(
+            query_params)
+
+        sql += f""" WHERE {conditional_clause}"""
+        sql += " GROUP BY symbol"
+
+        params.update(cond_params)
+
+        return self.query(sql, params=params).fetchall()
+
     @staticmethod
     def __create_conditional_clause(
             query_params: QueryParameters) -> Tuple[str, dict]:

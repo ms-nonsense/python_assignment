@@ -8,7 +8,8 @@ from marshmallow import EXCLUDE, ValidationError
 from dotenv import dotenv_values
 
 from financial.dao.financial_data_dao import FinancialDataDao
-from financial.model.query_parameters import OptQueryParametersSchema
+from financial.model.query_parameters import OptQueryParametersSchema, \
+    ReqQueryParametersSchema
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
@@ -66,6 +67,34 @@ def financial_data():
 def internal_server_error(e):
     """Return JSON instead of HTML for HTTP errors."""
     return jsonify({"data": [], "info": {"error": str(e)}}), 500
+
+
+@app.route('/api/statistics')
+def statistics():
+    args_dict = request.args.to_dict()
+    env_vars = dotenv_values(".env")
+
+    print(args_dict)
+    if not args_dict:
+        return jsonify({
+            "data": [],
+            "info": {
+                "error": "start_date, end_date, symbol are required."
+            }
+        })
+
+    try:
+        # Parameters not stated in specification are excluded.
+        query_params = ReqQueryParametersSchema().load(args_dict,
+                                                       unknown=EXCLUDE)
+
+        financial_data_dao = FinancialDataDao(env_vars)
+        result = financial_data_dao.fetch_average(query_params)
+
+        return jsonify({"data": [p for p in result], "info": {"error": ""}})
+
+    except ValidationError as e:
+        return jsonify({"data": [], "info": {"error": e.messages}})
 
 
 def __do_pagination(data_size: int, offset_page: int,

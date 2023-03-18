@@ -45,3 +45,38 @@ class OptQueryParametersSchema(Schema):
         }
 
         return QueryParameters(**dt_params, symbol=data.get('symbol'))
+
+
+class ReqQueryParametersSchema(Schema):
+    """
+    Schema for required query parameters.
+    """
+    # dates not in %Y-%m-%d will be considered invalid.
+    start_date = fields.Date(validate=validate.Length(min=1, max=10))
+    end_date = fields.Date(validate=validate.Length(min=1, max=10))
+    symbol = fields.Str(validate=validate.Length(min=1, max=20))
+
+    @validates_schema
+    def validate_dates(self, data, **kwargs):
+        if 'start_date' in data and 'end_date' in data:
+            if data['start_date'] > data['end_date']:
+                raise ValidationError(
+                    'End date should be later than start date.')
+
+    @post_load
+    def make_query_parameters(self, data, **kwargs) -> QueryParameters:
+        """
+        Instantiate QueryParameters
+        :param data: values
+        :param kwargs: keyword arguments
+        :return: QueryParameter object
+        """
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        params = {
+            'start_date': start_date.strftime('%Y-%m-%d'),
+            'end_date': end_date.strftime('%Y-%m-%d'),
+            'symbol': data.get('symbol')
+        }
+
+        return QueryParameters(**params)
