@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 import pymysql.cursors
 
-from financial.model.query_parameters import QueryParameters
+from model.query_parameters import QueryParameters
 
 
 class FinancialDataDao():
@@ -11,6 +11,7 @@ class FinancialDataDao():
     def __init__(self, config: Dict):
         self.__connection = pymysql.connect(
             host=config['MYSQL_HOST'],
+            port=int(config['MYSQL_PORT']),
             user=config['MYSQL_USER'],
             password=config['MYSQL_PASSWORD'],
             db=config['MYSQL_DB'],
@@ -31,22 +32,6 @@ class FinancialDataDao():
     def close(self):
         """ Closes the MySQL connection"""
         self.__connection.close()
-
-    def insert_record(self, record: dict) -> None:
-        """ Inserts record
-
-        :param record: record to be inserted
-        :return: None
-        """
-        sql = """
-            INSERT IGNORE INTO financial_data
-            (`symbol`, `date`, `open_price`, `close_price`, `volume`)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-        params = (record['symbol'], record['date'],
-                  float(record['open_price']), float(record['close_price']),
-                  int(record['volume']))
-        return self.query(sql, params)
 
     # FIXME: If data size is large, definitely return generator
     def fetch_record(self, query_params: QueryParameters) -> dict:

@@ -7,8 +7,8 @@ from flask import request, Flask, jsonify
 from marshmallow import EXCLUDE, ValidationError
 from dotenv import dotenv_values
 
-from financial.dao.financial_data_dao import FinancialDataDao
-from financial.model.query_parameters import OptQueryParametersSchema, \
+from dao.financial_data_dao import FinancialDataDao
+from model.query_parameters import OptQueryParametersSchema, \
     ReqQueryParametersSchema
 
 app = Flask(__name__)

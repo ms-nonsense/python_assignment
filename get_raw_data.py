@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Dict, List
 from datetime import datetime, date
 
+import pymysql.cursors
+from pymysql import Connection
 import requests
 from requests.exceptions import Timeout, JSONDecodeError
 from dotenv import dotenv_values
@@ -21,13 +23,49 @@ from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
 from financial.utilities import get_config
-from financial.dao.financial_data_dao import FinancialDataDao
 
 script_location = Path(__file__).absolute().parent
 log_conf_loc = script_location / 'financial/conf/logging.conf'
 config.fileConfig(log_conf_loc)
 
 LOGGER = logging.getLogger()
+
+
+# TODO: the contents of this file is getting too long. db-related file should be
+#  in another file
+def __create_db_conn(db_config: Dict) -> Connection:
+    connection = pymysql.connect(
+        host=db_config['MYSQL_HOST'],
+        port=int(db_config['MYSQL_PORT']),
+        user=db_config['MYSQL_USER'],
+        password=db_config['MYSQL_PASSWORD'],
+        db=db_config['MYSQL_DB'],
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=True)
+    return connection
+
+
+def __close_db_conn(db_conn: Connection):
+    """ Closes the MySQL connection"""
+    db_conn.close()
+
+
+def __insert_record(db_conn: Connection, record: dict) -> None:
+    """ Inserts record into the table
+
+    :param db_conn: database connection
+    :param record: record to be inserted
+    :return: None
+        """
+    sql = """
+        INSERT IGNORE INTO financial_data
+        (`symbol`, `date`, `open_price`, `close_price`, `volume`)
+        VALUES (%s, %s, %s, %s, %s)
+    """
+    params = (record['symbol'], record['date'],
+              float(record['open_price']), float(record['close_price']),
+              int(record['volume']))
+    db_conn.cursor().execute(sql, params)
 
 
 def __get_raw_financial_data(url, payload) -> Dict:
@@ -126,7 +164,8 @@ def start_data_retrieval() -> None:
     api_endpoint = app_config['stocks_endpoint']
     env_vars = dotenv_values(".env")
 
-    financial_data_dao = FinancialDataDao(env_vars)
+    # We are not catching any MySQL connection exception so it will bubble up
+    financial_data_dao = __create_db_conn(env_vars)
 
     for stock_name in stock_names:
         payload = {
@@ -138,7 +177,9 @@ def start_data_retrieval() -> None:
 
         result = __get_raw_financial_data(api_endpoint, payload)
         for datum in __process_raw_data(stock_name, result):
-            financial_data_dao.insert_record(datum)
+            __insert_record(financial_data_dao, datum)
+
+    __close_db_conn(financial_data_dao)
 
 
 if __name__ == '__main__':
