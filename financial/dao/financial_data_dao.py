@@ -37,7 +37,8 @@ class FinancialDataDao(object):
         :return: None
         """
         sql = """
-            INSERT IGNORE INTO financial_data (`symbol`, `date`, `open_price`, `close_price`, `volume`)
+            INSERT IGNORE INTO financial_data
+            (`symbol`, `date`, `open_price`, `close_price`, `volume`)
             VALUES (%s, %s, %s, %s, %s)
         """
         params = (record['symbol'], record['date'],

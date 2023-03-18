@@ -38,8 +38,8 @@ def __get_raw_financial_data(url, payload) -> Dict:
     :return: financial data in dictionary format
     """
     try:
-        # setting timeout in case the server is not responding in a timely manner.
-        # connect timeout = 3.0 sec, read timeout = 7.5s
+        # setting timeout in case the server is not responding in a timely
+        # manner. connect timeout = 3.0 sec, read timeout = 7.5s
         response = requests.get(url=url, params=payload, timeout=(3.0, 7.5))
         data = response.json()
         return data
