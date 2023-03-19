@@ -14,6 +14,7 @@ mccabe==0.7.0
 mypy==1.1.1
 mypy-extensions==1.0.0
 packaging==23.0
+pycodestyle==2.10.0
 pycparser==2.21
 pyflakes==3.0.1
 PyMySQL==1.0.2
