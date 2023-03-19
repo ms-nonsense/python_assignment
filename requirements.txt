@@ -1,6 +1,8 @@
 certifi==2022.12.7
+cffi==1.15.1
 charset-normalizer==3.1.0
 click==8.1.3
+cryptography==39.0.2
 flake8==6.0.0
 Flask==2.2.3
 idna==3.4
@@ -12,7 +14,7 @@ mccabe==0.7.0
 mypy==1.1.1
 mypy-extensions==1.0.0
 packaging==23.0
-pycodestyle==2.10.0
+pycparser==2.21
 pyflakes==3.0.1
 PyMySQL==1.0.2
 python-dateutil==2.8.2
