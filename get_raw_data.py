@@ -9,6 +9,7 @@ table's DDL
 import logging
 from logging import config
 
+import json
 from pathlib import Path
 from typing import Dict, List
 from datetime import datetime, date
@@ -22,8 +23,6 @@ from dotenv import dotenv_values
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
-from financial.utilities import get_config
-
 script_location = Path(__file__).absolute().parent
 log_conf_loc = script_location / 'financial/conf/logging.conf'
 config.fileConfig(log_conf_loc)
@@ -34,14 +33,13 @@ LOGGER = logging.getLogger()
 # TODO: the contents of this file is getting too long. db-related file should be
 #  in another file
 def __create_db_conn(db_config: Dict) -> Connection:
-    connection = pymysql.connect(
-        host=db_config['MYSQL_HOST'],
-        port=int(db_config['MYSQL_PORT']),
-        user=db_config['MYSQL_USER'],
-        password=db_config['MYSQL_PASSWORD'],
-        db=db_config['MYSQL_DB'],
-        cursorclass=pymysql.cursors.DictCursor,
-        autocommit=True)
+    connection = pymysql.connect(host=db_config['MYSQL_HOST'],
+                                 port=int(db_config['MYSQL_PORT']),
+                                 user=db_config['MYSQL_USER'],
+                                 password=db_config['MYSQL_PASSWORD'],
+                                 db=db_config['MYSQL_DB'],
+                                 cursorclass=pymysql.cursors.DictCursor,
+                                 autocommit=True)
     return connection
 
 
@@ -62,9 +60,8 @@ def __insert_record(db_conn: Connection, record: dict) -> None:
         (`symbol`, `date`, `open_price`, `close_price`, `volume`)
         VALUES (%s, %s, %s, %s, %s)
     """
-    params = (record['symbol'], record['date'],
-              float(record['open_price']), float(record['close_price']),
-              int(record['volume']))
+    params = (record['symbol'], record['date'], float(record['open_price']),
+              float(record['close_price']), int(record['volume']))
     db_conn.cursor().execute(sql, params)
 
 
@@ -157,9 +154,20 @@ def __is_within_date_range(min_date: date, max_date: date,
     return min_date <= target_date <= max_date
 
 
+def __get_config() -> Dict:
+    """ Read configurations
+
+    :return: configurations in dict format
+    """
+    file_location = script_location / 'financial/conf/config.json'
+
+    with open(file_location) as f:
+        return json.load(f)
+
+
 def start_data_retrieval() -> None:
     """ Entry point in retrieving financial data of target stocks. """
-    app_config = get_config()
+    app_config = __get_config()
     stock_names = app_config['stock_name']
     api_endpoint = app_config['stocks_endpoint']
     env_vars = dotenv_values(".env")
