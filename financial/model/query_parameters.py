@@ -52,8 +52,8 @@ class ReqQueryParametersSchema(Schema):
     Schema for required query parameters.
     """
     # dates not in %Y-%m-%d will be considered invalid.
-    start_date = fields.Date(validate=validate.Length(min=1, max=10))
-    end_date = fields.Date(validate=validate.Length(min=1, max=10))
+    start_date = fields.Date()
+    end_date = fields.Date()
     symbol = fields.Str(validate=validate.Length(min=1, max=20))
 
     @validates_schema
