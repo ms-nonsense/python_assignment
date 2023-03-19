@@ -33,7 +33,6 @@ def financial_data():
     limit, page = __get_request_page_params(request.args)
     size = 0
     env_vars = dotenv_values(".env")
-    print(env_vars)
 
     try:
         # Parameters not stated in specification are excluded.
@@ -74,7 +73,6 @@ def statistics():
     args_dict = request.args.to_dict()
     env_vars = dotenv_values(".env")
 
-    print(args_dict)
     if not args_dict:
         return jsonify({
             "data": [],
