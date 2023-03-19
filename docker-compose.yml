@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+
+  db:
+    image: mysql:5.7
+    restart: unless-stopped
+    container_name: db
+    env_file:
+      # this still gets exposed when using inspect. See README
+      - mysql-variables.env
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3307:3306'
+    expose:
+      # Opens port 3307 on the container
+      - '3307'
+      # Where our data will be persisted
+    command: --init-file /docker-entrypoint-initdb.d/0_init.sql
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/0_init.sql
+    healthcheck:
+      # do healthcheck because our API depends on this
+      test: mysqladmin --user=$$MYSQL_USER --password=$$MYSQL_PASSWORD ping
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 50s
+
+  stocks-api:
+    container_name: stocks-api
+    restart: on-failure
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - ${PWD}/financial:/financial
