@@ -57,7 +57,10 @@ venv
 .python-version
 
 # logs
-logs
+logs/*
+!logs/.gitkeep
 
 # app-related files
 .env
+mysql-variables.env
+db
